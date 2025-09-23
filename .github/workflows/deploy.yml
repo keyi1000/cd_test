@@ -1,4 +1,4 @@
-name: Deploy to Docker Compose
+name: Deploy to Docker Compose (IPv6)
 
 on:
   push:
@@ -17,14 +17,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Test SSH connection
+      - name: Test SSH connection (IPv6)
         run: |
-          ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'SSH connection successful'"
+          ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -6 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST_IPV6 }} "echo 'SSH connection successful'"
 
       - name: Copy files to server
         run: |
-          rsync -avz --exclude='.git*' ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PATH }}
+          rsync -avz --exclude='.git*' ./ ${{ secrets.SSH_USER }}@[${{ secrets.SSH_HOST_IPV6 }}]:${{ secrets.SSH_PATH }}
 
       - name: Deploy with Docker Compose
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.SSH_PATH }} && docker-compose pull && docker-compose up -d"
+          ssh -6 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST_IPV6 }} "cd ${{ secrets.SSH_PATH }} && docker-compose pull && docker-compose up -d"
